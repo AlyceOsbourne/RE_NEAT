@@ -63,38 +63,108 @@ def batch_save_genomes(genomes: dict[str, Genotype]):
         to_file(genome, name)
 
 
-def create_default_genome(input_len: int, output_len: int) -> tuple[
-        Genotype,
-        count,
-        dict[tuple[int, int], int],
-        count
-]:
-    # we want to return a genome where all input nodes are connected to all output nodes
-    # with no hidden nodes.
-    # we also want to assign innovation numbers to each connection gene, storing in a dict to be returned also
-    # we also want to assign node ids to each node gene, storing in a set to be returned also
+def similarity(genome_a:Genotype, genome_b:Genotype):
+    """Returns the similarity between two genomes out of 100%"""
+    a_node_lookup = {
+        n.id: n
+        for n in genome_a.nodes
+    }
 
-    nodes = []
+    b_node_lookup = {
+        n.id: n
+        for n in genome_b.nodes
+    }
+
+    a_connection_lookup = {
+        c.innovation: c
+        for c in genome_a.connections
+    }
+    b_connection_lookup = {
+        c.innovation: c
+        for c in genome_b.connections
+    }
+
+    a_node_len = len(a_node_lookup)
+    b_node_len = len(b_node_lookup)
+    a_conn_len = len(a_connection_lookup)
+    b_conn_len = len(b_connection_lookup)
+
+    length_similarity = 0
+    if a_node_len == b_node_len:
+        length_similarity += 50
+    elif a_node_len > b_node_len:
+        length_similarity += 50 * (b_node_len / a_node_len)
+    else:
+        length_similarity += 50 * (a_node_len / b_node_len)
+
+    if a_conn_len == b_conn_len:
+        length_similarity += 50
+    elif a_conn_len > b_conn_len:
+        length_similarity += 50 * (b_conn_len / a_conn_len)
+    else:
+        length_similarity += 50 * (a_conn_len / b_conn_len)
+
+    node_similarity = 0
+    for node_id, node in a_node_lookup.items():
+        if node_id in b_node_lookup and node.enabled == b_node_lookup[node_id].enabled:
+            node_similarity += 100 / a_node_len
+        else:
+            node_similarity += 50 / a_node_len
+
+
+    connection_similarity = 0
+    for conn_id, conn in a_connection_lookup.items():
+        if conn_id in b_connection_lookup:
+            connection_similarity += 100 / a_conn_len
+        else:
+            connection_similarity += 50 / a_conn_len
+
+    return (length_similarity + node_similarity + connection_similarity) / 3
+
+
+def create_default_genome(
+        input_len:int,
+        output_len:int,
+        node_idx_counter:count,
+        innovation_idx_counter:count,
+        innovations: dict[tuple[int, int]: int]):
+    input_nodes = [
+        NodeGene(
+            next(node_idx_counter),
+            'input'
+        )
+        for _ in range(input_len)
+    ]
+    output_nodes = [
+        NodeGene(
+            next(node_idx_counter),
+            'output'
+        )
+        for _ in range(output_len)
+    ]
     connections = []
-    innovations = dict()
-    innovation_idx = count()
-    node_idx = count()
+    for input_node in input_nodes:
+        for output_node in output_nodes:
+            inno_id = next(innovation_idx_counter)
+            innovations[(input_node.id, output_node.id)] = inno_id
+            connection = ConnectionGene(
+                input_node.id,
+                output_node.id,
+                random.uniform(-1, 1),
+                True,
+                inno_id
+            )
+            connections.append(connection)
 
-    for i in range(input_len):
-        nodes.append(NodeGene(id=next(node_idx), type='input'))
-    for j in range(input_len, input_len + output_len):
-        nodes.append(NodeGene(id=next(node_idx), type='output'))
-    for i in range(input_len):
-        for j in range(input_len, input_len + output_len):
-            innovation = next(innovation_idx)
-            innovations[(i, j)] = innovation
-            connections.append(ConnectionGene(in_node=i, out_node=j, weight=random.random(), enabled=True, innovation=innovation))
-
-    return (
-        Genotype(
-            nodes,
-            connections),
-        innovation_idx,
-        innovations,
-        node_idx
+    return Genotype(
+        nodes=input_nodes + output_nodes,
+        connections=connections
     )
+
+
+if __name__ == '__main__':
+    node_idx_counter, innovation_idx_counter, innovations = count(), count(), dict()
+    genome = create_default_genome(2, 1, node_idx_counter, innovation_idx_counter, innovations)
+    print(genome, genome_to_json(genome), sep='\n')
+    to_file(genome, 'x_or')
+

@@ -72,3 +72,9 @@ class Network:
             out += f'\t\t{connection},\n'
         out += '\t]\n)'
         return out
+
+
+if __name__ == '__main__':
+    genome = genotype.from_file('x_or')
+    network = Network.from_genotype(genome)
+    print(network)
