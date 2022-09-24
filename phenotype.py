@@ -1,5 +1,7 @@
+from itertools import count
+from typing import TypeVar
+
 import genotype
-import activation_functions
 
 
 class Node:
@@ -74,7 +76,30 @@ class Network:
         return out
 
 
-if __name__ == '__main__':
+Population = TypeVar(
+    'Population',
+    bound=list[Network]
+)
+
+
+def default_population_creator(input_len, output_len, population_size) -> tuple[
+    genotype.NodeIDXCounter, genotype.InnovationIDXCounter, genotype.Innovations, Population
+]:
+    node_idx_counter, innovation_idx_counter = count(), count()
+    innovations = dict()
+    base_genome = genotype.create_default_genome(
+        input_len, output_len, node_idx_counter, innovation_idx_counter, innovations
+    )
+    population = [Network.from_genotype(base_genome) for _ in range(population_size)]
+    return node_idx_counter, innovation_idx_counter, innovations, population
+
+
+def main():
+    genotype.main()
     genome = genotype.from_file('x_or')
     network = Network.from_genotype(genome)
     print(network)
+
+
+if __name__ == '__main__':
+    main()

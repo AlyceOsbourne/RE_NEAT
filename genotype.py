@@ -3,7 +3,11 @@ import json
 import os
 import random
 from itertools import count
-from typing import NamedTuple, Literal
+from typing import NamedTuple, Literal, TypeVar
+
+InnovationIDXCounter = TypeVar("InnovationIDXCounter", bound=count)
+NodeIDXCounter = TypeVar("NodeIDXCounter", bound=count)
+Innovations = dict[tuple[int, int]: int]
 
 NodeGene = NamedTuple(
     'NodeGene', [
@@ -125,9 +129,9 @@ def similarity(genome_a:Genotype, genome_b:Genotype):
 def create_default_genome(
         input_len:int,
         output_len:int,
-        node_idx_counter:count,
-        innovation_idx_counter:count,
-        innovations: dict[tuple[int, int]: int]):
+        node_idx_counter: NodeIDXCounter,
+        innovation_idx_counter: InnovationIDXCounter,
+        innovations: Innovations):
     input_nodes = [
         NodeGene(
             next(node_idx_counter),
@@ -150,7 +154,7 @@ def create_default_genome(
             connection = ConnectionGene(
                 input_node.id,
                 output_node.id,
-                random.uniform(-1, 1),
+                1,
                 True,
                 inno_id
             )
@@ -162,9 +166,13 @@ def create_default_genome(
     )
 
 
-if __name__ == '__main__':
+def main():
     node_idx_counter, innovation_idx_counter, innovations = count(), count(), dict()
     genome = create_default_genome(2, 1, node_idx_counter, innovation_idx_counter, innovations)
     print(genome, genome_to_json(genome), sep='\n')
     to_file(genome, 'x_or')
+
+
+if __name__ == '__main__':
+    main()
 
