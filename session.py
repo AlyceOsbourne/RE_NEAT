@@ -1,5 +1,6 @@
 import genotype, phenotype
 
+
 class Session:
     node_idx_counter: genotype.NodeIDXCounter
     innovation_idx_counter: genotype.InnovationIDXCounter
@@ -37,10 +38,3 @@ class Session:
 if __name__ == '__main__':
     session = Session.create_default_session(2, 1, 100)
     print(session)
-
-
-
-
-
-
-
