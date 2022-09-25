@@ -1,3 +1,6 @@
+import pprint
+import random
+
 import genotype, phenotype
 
 
@@ -20,21 +23,25 @@ class Session:
         self.population = population
 
     @classmethod
-    def create_default_session(cls, input_len, output_len, population_size):
+    def create_default_session(cls, input_len, output_len, population_size, weight_generation_function,
+                               start_with_enabled_connections):
         return cls(
-            *phenotype.default_population_creator(input_len, output_len, population_size)
+            *phenotype.default_population_creator(
+                input_len,
+                output_len,
+                population_size,
+                weight_generation_function,
+                start_with_enabled_connections
+            )
         )
 
     def __str__(self):
         out = 'Session(\n'
-        out += f'\tnode_idx_counter={self.node_idx_counter},\n'
-        out += f'\tinnovation_idx_counter={self.innovation_idx_counter},\n'
-        out += f'\tinnovations={self.innovations},\n'
-        out += f'\tpopulation={self.population}\n)'
-        out += ')'
+        out += pprint.pformat(self.population, indent=4)
+        out += '\n)'
         return out
 
 
 if __name__ == '__main__':
-    session = Session.create_default_session(2, 1, 100)
+    session = Session.create_default_session(2, 1, 100, lambda: random.uniform(-1, 1), True)
     print(session)

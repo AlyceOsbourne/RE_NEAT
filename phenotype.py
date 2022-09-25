@@ -82,20 +82,30 @@ Population = TypeVar(
 )
 
 
-def default_population_creator(input_len, output_len, population_size) -> tuple[
+def default_population_creator(
+        input_len,
+        output_len,
+        population_size,
+        weight_generation_function,
+        start_with_enabled_connections
+) -> tuple[
     genotype.NodeIDXCounter, genotype.InnovationIDXCounter, genotype.Innovations, Population
 ]:
     node_idx_counter, innovation_idx_counter = count(), count()
     innovations = dict()
     base_genome = genotype.create_default_genome(
-        input_len, output_len, node_idx_counter, innovation_idx_counter, innovations
+        input_len, output_len, node_idx_counter, innovation_idx_counter, innovations, weight_generation_function,
+        start_with_enabled_connections
     )
-    population = [Network.from_genotype(base_genome) for _ in range(population_size)]
+    population = [
+        Network.from_genotype(
+            genotype.mutate(base_genome, node_idx_counter, innovation_idx_counter, innovations)) for _ in
+        range(population_size)]
     return node_idx_counter, innovation_idx_counter, innovations, population
 
 
 def main():
-    genotype.main()
+    genotype.console_build_genome_file()
     genome = genotype.from_file('x_or')
     network = Network.from_genotype(genome)
     print(network)

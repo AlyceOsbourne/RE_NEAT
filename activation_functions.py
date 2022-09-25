@@ -31,7 +31,8 @@ def relu(x):
 @activation_function
 @lru_cache(maxsize=1000)
 def lrelu(x):
-    """Linear function that will output the input directly if it is positive, otherwise, it will output a small number"""
+    """Linear function that will output the input directly if it is positive,
+    otherwise, it will output a small number """
     return max(0.01 * x, x)
 
 @activation_function
@@ -58,7 +59,8 @@ def identity(x):
 @activation_function
 @lru_cache(maxsize=1000)
 def binary_step(x):
-    """Binary step function that will output 1 if the input is positive, otherwise, it will output 0"""
+    """Binary step function that will output 1 if the input is positive,
+    otherwise, it will output 0"""
     return 1 if x >= 0 else 0
 
 
